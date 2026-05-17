@@ -41,7 +41,14 @@ struct ContentView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
 
-                Button(action: viewModel.loginTapped) {
+                Button {
+                    Task {
+                        let didLogin = await viewModel.loginTapped()
+                        if didLogin {
+                            sessionStore.markAuthenticated()
+                        }
+                    }
+                } label: {
                     Group {
                         if viewModel.isLoading {
                             ProgressView()
@@ -61,13 +68,6 @@ struct ContentView: View {
                     Text(errorMessage)
                         .font(.footnote)
                         .foregroundStyle(.red)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-
-                if let loginMessage = viewModel.loginMessage {
-                    Text(loginMessage)
-                        .font(.footnote)
-                        .foregroundStyle(.green)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
@@ -97,10 +97,6 @@ struct ContentView: View {
         }
         .onDisappear {
             toastHideTask?.cancel()
-        }
-        .onChange(of: viewModel.loginMessage) { _, newValue in
-            guard newValue != nil else { return }
-            sessionStore.markAuthenticated()
         }
     }
 

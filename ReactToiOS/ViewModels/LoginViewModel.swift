@@ -14,7 +14,6 @@ final class LoginViewModel: ObservableObject {
     @Published var password = ""
     @Published var isLoading = false
     @Published var errorMessage: String?
-    @Published var loginMessage: String?
 
     var isLoginEnabled: Bool {
         !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -28,31 +27,27 @@ final class LoginViewModel: ObservableObject {
         self.authService = authService ?? AuthService()
     }
 
-    func loginTapped() {
-        guard isLoginEnabled else { return }
-
-        Task {
-            await performLogin()
-        }
+    func loginTapped() async -> Bool {
+        guard isLoginEnabled else { return false }
+        return await performLogin()
     }
 
-    private func performLogin() async {
+    private func performLogin() async -> Bool {
         isLoading = true
         errorMessage = nil
-        loginMessage = nil
         defer { isLoading = false }
 
         do {
             try await authService.login(email: email, password: password)
-            loginMessage = "로그인에 성공했습니다."
+            return true
         } catch {
-            loginMessage = nil
             if let localizedError = error as? LocalizedError,
                let message = localizedError.errorDescription {
                 errorMessage = message
             } else {
                 errorMessage = "로그인 중 오류가 발생했습니다."
             }
+            return false
         }
     }
 }
