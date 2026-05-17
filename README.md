@@ -20,6 +20,3 @@ React + Spring Boot 기반 기존 관리자 서비스를 Swift iOS 앱으로 포
 - MVVM
 - async/await + URLSession
 - Keychain (토큰 저장)
-
-## Docs
-- 프로젝트 결정사항: `PROJECT_NOTES.md`

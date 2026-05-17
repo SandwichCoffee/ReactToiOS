@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DAC90D0A2FB95F54004EEABB /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = DAC90D092FB95F54004EEABB /* README.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		DAC90C822FB6EAEE004EEABB /* ReactToiOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReactToiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DAC90D092FB95F54004EEABB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +37,7 @@
 		DAC90C792FB6EAEE004EEABB = {
 			isa = PBXGroup;
 			children = (
+				DAC90D092FB95F54004EEABB /* README.md */,
 				DAC90C842FB6EAEE004EEABB /* ReactToiOS */,
 				DAC90C832FB6EAEE004EEABB /* Products */,
 			);
@@ -109,6 +115,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DAC90D0A2FB95F54004EEABB /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
