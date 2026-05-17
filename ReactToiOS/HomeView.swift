@@ -276,6 +276,30 @@ private struct DashboardScreen: View {
                     .foregroundStyle(Color.accentColor.gradient)
                 }
                 .frame(height: 220)
+                .chartXAxis {
+                    AxisMarks(values: viewModel.chartData.map(\.date)) { value in
+                        AxisGridLine()
+                        AxisTick()
+                        AxisValueLabel {
+                            if let raw = value.as(String.self) {
+                                Text(formatXAxisLabel(raw))
+                            }
+                        }
+                    }
+                }
+                .chartYAxis {
+                    AxisMarks(position: .leading) { value in
+                        AxisGridLine()
+                        AxisTick()
+                        AxisValueLabel {
+                            if let intValue = value.as(Int.self) {
+                                Text(formatYAxisRevenue(Double(intValue)))
+                            } else if let doubleValue = value.as(Double.self) {
+                                Text(formatYAxisRevenue(doubleValue))
+                            }
+                        }
+                    }
+                }
             }
         }
         .padding(16)
@@ -319,6 +343,75 @@ private struct DashboardScreen: View {
         formatter.numberStyle = .decimal
         let value = formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
         return "\(value)원"
+    }
+
+    private func formatXAxisLabel(_ raw: String) -> String {
+        switch viewModel.selectedPeriod {
+        case .daily:
+            // "05-17" -> "5/17"
+            let parts = raw.split(separator: "-")
+            if parts.count == 2,
+               let month = Int(parts[0]),
+               let day = Int(parts[1]) {
+                return "\(month)/\(day)"
+            }
+            return raw
+        case .weekly:
+            // "2026-w06" -> "2월 1째주"
+            return weeklyLabelToMonth(raw) ?? raw
+        case .monthly:
+            // "2026-02" -> "2026-2월"
+            let parts = raw.split(separator: "-")
+            if parts.count == 2,
+               let year = Int(parts[0]),
+               let month = Int(parts[1]) {
+                return "\(year)-\(month)월"
+            }
+            return raw
+        case .yearly:
+            // "2026" -> "2026년"
+            return "\(raw)년"
+        }
+    }
+
+    private func weeklyLabelToMonth(_ raw: String) -> String? {
+        let parts = raw.components(separatedBy: "-w")
+        guard parts.count == 2,
+              let year = Int(parts[0]),
+              let week = Int(parts[1]) else {
+            return nil
+        }
+
+        var components = DateComponents()
+        components.yearForWeekOfYear = year
+        components.weekOfYear = week
+        components.weekday = 2 // Monday in ISO week
+
+        let calendar = Calendar(identifier: .iso8601)
+        guard let date = calendar.date(from: components) else {
+            return nil
+        }
+
+        let month = calendar.component(.month, from: date)
+        let day = calendar.component(.day, from: date)
+        let weekOfMonth = ((day - 1) / 7) + 1
+        return "\(month)월 \(weekOfMonth)째주"
+    }
+
+    private func formatYAxisRevenue(_ value: Double) -> String {
+        let positive = max(value, 0)
+
+        if positive >= 100_000_000 {
+            let eok = Int(positive / 100_000_000)
+            return "\(eok)억"
+        }
+
+        if positive >= 10_000 {
+            let man = Int(positive / 10_000)
+            return "\(man)만"
+        }
+
+        return "\(Int(positive))"
     }
 }
 

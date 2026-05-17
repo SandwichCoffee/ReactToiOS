@@ -30,6 +30,14 @@ struct DashboardStatsResponse: Decodable {
     let totalRevenue: Int
 }
 
+struct ProductListSummaryResponse: Decodable {
+    let total: Int
+}
+
+struct RecruitSummary: Decodable {
+    let status: String
+}
+
 struct SalesPoint: Decodable, Identifiable {
     let date: String
     let revenue: Int

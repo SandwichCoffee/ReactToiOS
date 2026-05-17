@@ -22,6 +22,8 @@ final class LoginViewModel: ObservableObject {
     }
 
     private let authService: AuthServiceProtocol
+    private let adminEmail = "admin@aa.com"
+    private let adminPassword = "123123"
 
     init(authService: AuthServiceProtocol? = nil) {
         self.authService = authService ?? AuthService()
@@ -29,10 +31,17 @@ final class LoginViewModel: ObservableObject {
 
     func loginTapped() async -> Bool {
         guard isLoginEnabled else { return false }
-        return await performLogin()
+        return await performLogin(email: email, password: password)
     }
 
-    private func performLogin() async -> Bool {
+    func loginAsAdminTapped() async -> Bool {
+        guard !isLoading else { return false }
+        email = adminEmail
+        password = adminPassword
+        return await performLogin(email: adminEmail, password: adminPassword)
+    }
+
+    private func performLogin(email: String, password: String) async -> Bool {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }

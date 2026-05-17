@@ -64,6 +64,23 @@ struct ContentView: View {
                 .buttonStyle(.borderedProminent)
                 .disabled(!viewModel.isLoginEnabled)
 
+                Button {
+                    Task {
+                        let didLogin = await viewModel.loginAsAdminTapped()
+                        if didLogin {
+                            sessionStore.markAuthenticated()
+                        }
+                    }
+                } label: {
+                    Text("관리자 계정으로 로그인")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                }
+                .buttonStyle(.bordered)
+                .tint(.blue)
+                .disabled(viewModel.isLoading)
+
                 if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage)
                         .font(.footnote)
