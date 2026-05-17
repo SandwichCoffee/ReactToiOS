@@ -11,8 +11,12 @@ import Combine
 @MainActor
 final class DashboardViewModel: ObservableObject {
     @Published var selectedPeriod: DashboardPeriod = .daily
+    @Published var totalProductCount: Int = 0
+    @Published var activeRecruitCount: Int = 0
     @Published var totalRevenue: Int = 0
     @Published var chartData: [SalesPoint] = []
+    @Published var systemStatus: String = "정상"
+    @Published var systemStatusDescription: String = "Server Uptime: 99.9%"
     @Published var isLoading = false
     @Published var errorMessage: String?
 
@@ -51,14 +55,31 @@ final class DashboardViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let response: DashboardStatsResponse = try await apiClient.get(
+            async let statsTask: DashboardStatsResponse = apiClient.get(
                 path: "/orders/stats",
                 queryItems: [URLQueryItem(name: "period", value: selectedPeriod.rawValue)]
             )
-            totalRevenue = response.totalRevenue
-            chartData = response.chartData
+            async let productsTask: ProductListSummaryResponse = apiClient.get(
+                path: "/products",
+                queryItems: [
+                    URLQueryItem(name: "page", value: "1"),
+                    URLQueryItem(name: "size", value: "1")
+                ]
+            )
+            async let recruitsTask: [RecruitSummary] = apiClient.get(path: "/recruits")
+
+            let stats = try await statsTask
+            let products = try await productsTask
+            let recruits = try await recruitsTask
+
+            totalRevenue = stats.totalRevenue
+            chartData = stats.chartData
+            totalProductCount = products.total
+            activeRecruitCount = recruits.filter { $0.status == "OPEN" }.count
         } catch {
             chartData = []
+            totalProductCount = 0
+            activeRecruitCount = 0
             if let localizedError = error as? LocalizedError,
                let message = localizedError.errorDescription {
                 errorMessage = message

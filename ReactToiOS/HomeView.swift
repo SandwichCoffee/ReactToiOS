@@ -10,26 +10,32 @@ import Charts
 
 private enum HomeMenuItem: String, CaseIterable, Identifiable {
     case dashboard
+    case resume
     case products
-    case orders
+    case recruits
+    case devlogs
     case settings
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .dashboard: return "대시보드"
-        case .products: return "상품"
-        case .orders: return "주문"
-        case .settings: return "설정"
+        case .dashboard: return "Dashboard"
+        case .resume: return "Resume"
+        case .products: return "Products"
+        case .recruits: return "Recruits"
+        case .devlogs: return "Devlogs"
+        case .settings: return "Settings"
         }
     }
 
     var iconName: String {
         switch self {
         case .dashboard: return "chart.bar.xaxis"
+        case .resume: return "doc.text"
         case .products: return "shippingbox"
-        case .orders: return "list.bullet.clipboard"
+        case .recruits: return "person.3"
+        case .devlogs: return "terminal"
         case .settings: return "gearshape"
         }
     }
@@ -51,20 +57,30 @@ struct HomeView: View {
                             viewModel: dashboardViewModel,
                             onQuickMenuTap: selectMenu
                         )
+                    case .resume:
+                        PlaceholderFeatureView(
+                            title: "Resume 준비중",
+                            description: "다음 단계에서 이력/자기소개 섹션을 연결합니다."
+                        )
                     case .products:
                         PlaceholderFeatureView(
-                            title: "상품 기능 준비중",
+                            title: "Products 준비중",
                             description: "다음 단계에서 상품 목록/상세를 연결합니다."
                         )
-                    case .orders:
+                    case .recruits:
                         PlaceholderFeatureView(
-                            title: "주문 기능 준비중",
-                            description: "다음 단계에서 주문 플로우를 연결합니다."
+                            title: "Recruits 준비중",
+                            description: "다음 단계에서 채용공고 목록/상세를 연결합니다."
+                        )
+                    case .devlogs:
+                        PlaceholderFeatureView(
+                            title: "Devlogs 준비중",
+                            description: "다음 단계에서 개발로그 목록/상세를 연결합니다."
                         )
                     case .settings:
                         PlaceholderFeatureView(
-                            title: "설정 기능 준비중",
-                            description: "포트폴리오 단계에 맞춰 순차적으로 추가합니다."
+                            title: "Settings 준비중",
+                            description: "다음 단계에서 설정 화면을 연결합니다."
                         )
                     }
                 }
@@ -161,12 +177,12 @@ private struct DashboardScreen: View {
     @ObservedObject var viewModel: DashboardViewModel
     let onQuickMenuTap: (HomeMenuItem) -> Void
 
-    private static let quickMenus: [HomeMenuItem] = [.products, .orders, .settings]
+    private static let quickMenus: [HomeMenuItem] = [.resume, .products, .recruits, .devlogs, .settings]
 
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                summaryCard
+                summaryCardsSection
                 periodPicker
                 chartSection
                 quickMenuSection
@@ -179,18 +195,35 @@ private struct DashboardScreen: View {
         }
     }
 
-    private var summaryCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("총 매출")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            Text("\(formattedCurrency(viewModel.totalRevenue))")
-                .font(.title.bold())
+    private var summaryCardsSection: some View {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+            SummaryMetricCard(
+                title: "총 등록 상품",
+                value: "\(viewModel.totalProductCount)개",
+                iconName: "shippingbox",
+                tint: .blue
+            )
+            SummaryMetricCard(
+                title: "진행 중 공고",
+                value: "\(viewModel.activeRecruitCount)건",
+                iconName: "person.3",
+                tint: .green
+            )
+            SummaryMetricCard(
+                title: "누적 총 매출",
+                value: formattedCurrency(viewModel.totalRevenue),
+                subtitle: "실시간 집계 중",
+                iconName: "chart.line.uptrend.xyaxis",
+                tint: .blue
+            )
+            SummaryMetricCard(
+                title: "시스템 상태",
+                value: viewModel.systemStatus,
+                subtitle: viewModel.systemStatusDescription,
+                iconName: "checkmark.shield",
+                tint: .green
+            )
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 
     private var periodPicker: some View {
@@ -286,6 +319,42 @@ private struct DashboardScreen: View {
         formatter.numberStyle = .decimal
         let value = formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
         return "\(value)원"
+    }
+}
+
+private struct SummaryMetricCard: View {
+    let title: String
+    let value: String
+    var subtitle: String? = nil
+    let iconName: String
+    let tint: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+                Image(systemName: iconName)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(tint)
+            }
+
+            Text(value)
+                .font(.headline.bold())
+                .foregroundStyle(tint)
+
+            if let subtitle {
+                Text(subtitle)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }
 
