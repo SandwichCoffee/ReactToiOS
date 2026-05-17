@@ -8,9 +8,11 @@ React + Spring Boot 기반 기존 관리자 서비스를 Swift iOS 앱으로 포
 
 ## Scope (MVP)
 - 로그인/회원가입
+- 관리자 계정 빠른 로그인 버튼
+- 로그인 세션 복원/로그아웃/401 처리
+- 대시보드(요약 카드 + 매출 추이 차트)
+- 대시보드 메뉴 구조: Dashboard, Resume, Products, Recruits, Devlogs, Settings
 - 상품 목록/상세
-- 장바구니 조회/추가/수정/삭제
-- 주문 생성
 - 내 계정 기본 화면
 
 ## Tech (planned)

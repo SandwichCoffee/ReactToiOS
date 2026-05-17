@@ -24,3 +24,7 @@ Pods/
 
 # Swift Package Manager
 .build/
+
+# Local planning docs (keep local, do not track)
+PROJECT_NOTES.md
+NEXT_STEPS.md
