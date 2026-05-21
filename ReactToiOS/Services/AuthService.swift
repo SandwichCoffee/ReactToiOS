@@ -19,10 +19,12 @@ final class AuthService: AuthServiceProtocol {
         self.tokenStore = tokenStore
     }
 
-    func login(email: String, password: String) async throws {
+    func login(email: String, password: String) async throws -> LoginResponse {
         let request = LoginRequest(email: email, password: password)
         let response: LoginResponse = try await apiClient.post(path: "/users/login", body: request)
         try tokenStore.saveToken(response.token)
+        
+        return response
     }
 
     func register(email: String, password: String, userName: String) async throws {

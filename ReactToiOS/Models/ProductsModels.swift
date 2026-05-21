@@ -20,5 +20,9 @@ struct ProductItem: Decodable, Identifiable {
     let prodImg: String?
     let regDate: String?
     
+    let prodCategory: String?
+    let prodDesc: String?
+    let prodStatus: String?
+    
     var id: Int { prodId }
 }

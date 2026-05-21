@@ -45,7 +45,7 @@ struct ContentView: View {
                     Task {
                         let didLogin = await viewModel.loginTapped()
                         if didLogin {
-                            sessionStore.markAuthenticated()
+                            sessionStore.markAuthenticated(role: viewModel.loggedInRole)
                         }
                     }
                 } label: {
@@ -68,7 +68,7 @@ struct ContentView: View {
                     Task {
                         let didLogin = await viewModel.loginAsAdminTapped()
                         if didLogin {
-                            sessionStore.markAuthenticated()
+                            sessionStore.markAuthenticated(role: viewModel.loggedInRole)
                         }
                     }
                 } label: {

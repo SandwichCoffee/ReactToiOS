@@ -28,7 +28,11 @@ struct ProductsView: View {
             } else {
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(viewModel.products) { product in
-                            ProductCard(item: product)
+                            NavigationLink {
+                                ProductDetailView(productId: product.prodId, seed: product)
+                            } label: {
+                                ProductCard(item: product)
+                            }
                         }
                     }
                     .padding()

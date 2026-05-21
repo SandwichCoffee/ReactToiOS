@@ -9,6 +9,7 @@ import Foundation
 
 extension Notification.Name {
     static let didReceiveUnauthorizedResponse = Notification.Name("didReceiveUnauthorizedResponse")
+    static let didUpdateProduct = Notification.Name("didUpdateProduct")
 }
 
 enum NetworkError: LocalizedError {
@@ -70,6 +71,33 @@ final class APIClient {
         bearerToken: String? = nil
     ) async throws {
         _ = try await sendPost(path: path, body: body, bearerToken: bearerToken)
+    }
+    
+    func postFormNoResponse(
+        path: String,
+        form: [String: String],
+        bearerToken: String? = nil
+    ) async throws {
+        guard let url = URL(string: baseURLString + path) else {
+            throw NetworkError.invalidURL
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded; charset=utf-8", forHTTPHeaderField: "Content-Type")
+        
+        if let bearerToken {
+            request.setValue("Bearer \(bearerToken)", forHTTPHeaderField: "Authorization")
+        } else if !isAuthEndpoint(path), let savedToken = tokenStore.readToken() {
+            request.setValue("Bearer \(savedToken)", forHTTPHeaderField: "Authorization")
+        }
+        
+        var components = URLComponents()
+        components.queryItems = form.map { URLQueryItem(name: $0.key, value: $0.value) }
+        request.httpBody = components.percentEncodedQuery?.data(using: .utf8)
+        
+        let (data, response) = try await session.data(for: request)
+        _ = try handleResponse(data: data, response: response, path: path)
     }
 
     func get<ResponseBody: Decodable>(
@@ -173,5 +201,21 @@ final class APIClient {
             return nil
         }
         return errorResponse.fieldErrors?.values.first ?? errorResponse.message
+    }
+    
+    func delete(path: String, bearerToken: String? = nil) async throws {
+        guard let url = URL(string: baseURLString + path) else { throw NetworkError.invalidURL }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        if let bearerToken {
+            request.setValue("Bearer \(bearerToken)", forHTTPHeaderField: "Authorization")
+        } else if !isAuthEndpoint(path), let savedToken = tokenStore.readToken() {
+            request.setValue("Bearer \(savedToken)", forHTTPHeaderField: "Authorization")
+        }
+        
+        let (data, response) = try await session.data(for: request)
+        _ = try handleResponse(data: data, response: response, path: path)
     }
 }

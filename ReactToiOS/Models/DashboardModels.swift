@@ -25,12 +25,12 @@ enum DashboardPeriod: String, CaseIterable, Identifiable {
     }
 }
 
-struct DashboardStatsResponse: Decodable {
+nonisolated struct DashboardStatsResponse: Decodable {
     let chartData: [SalesPoint]
     let totalRevenue: Int
 }
 
-struct ProductListSummaryResponse: Decodable {
+nonisolated struct ProductListSummaryResponse: Decodable {
     let total: Int
     let products: [ProductSummary]
 
@@ -149,7 +149,7 @@ struct SalesPoint: Decodable, Identifiable {
 }
 
 private extension KeyedDecodingContainer {
-    func decodeFlexibleString(forKeys keys: [Key]) -> String? {
+    nonisolated func decodeFlexibleString(forKeys keys: [Key]) -> String? {
         for key in keys {
             if let value = try? decode(String.self, forKey: key), !value.isEmpty {
                 return value
@@ -161,7 +161,7 @@ private extension KeyedDecodingContainer {
         return nil
     }
 
-    func decodeFlexibleInt(forKeys keys: [Key]) -> Int? {
+    nonisolated func decodeFlexibleInt(forKeys keys: [Key]) -> Int? {
         for key in keys {
             if let value = try? decode(Int.self, forKey: key) {
                 return value

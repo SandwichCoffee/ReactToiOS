@@ -506,69 +506,74 @@ private struct DashboardScreen: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 12) {
                         ForEach(viewModel.recentProducts) { product in
-                            VStack(alignment: .leading, spacing: 10) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color(.tertiarySystemBackground))
+                            NavigationLink {
+                                ProductDetailView(productId: product.productId)
+                            } label: {
+                                VStack(alignment: .leading, spacing: 10) {
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(Color(.tertiarySystemBackground))
 
-                                    if let imageURL = productImageURL(product.imageName) {
-                                        AsyncImage(url: imageURL) { phase in
-                                            switch phase {
-                                            case let .success(image):
-                                                image
-                                                    .resizable()
-                                                    .scaledToFill()
-                                            case .failure:
-                                                Image(systemName: "photo")
-                                                    .font(.title3)
-                                                    .foregroundStyle(.secondary)
-                                            default:
-                                                ProgressView()
+                                        if let imageURL = productImageURL(product.imageName) {
+                                            AsyncImage(url: imageURL) { phase in
+                                                switch phase {
+                                                case let .success(image):
+                                                    image
+                                                        .resizable()
+                                                        .scaledToFill()
+                                                case .failure:
+                                                    Image(systemName: "photo")
+                                                        .font(.title3)
+                                                        .foregroundStyle(.secondary)
+                                                default:
+                                                    ProgressView()
+                                                }
                                             }
+                                        } else {
+                                            Image(systemName: "photo")
+                                                .font(.title3)
+                                                .foregroundStyle(.secondary)
                                         }
+                                    }
+                                    .frame(height: 110)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                                    Text(product.name)
+                                        .font(.subheadline.weight(.semibold))
+                                        .lineLimit(2)
+
+                                    if let price = product.price {
+                                        Text(formattedCurrency(price))
+                                            .font(.caption.weight(.semibold))
+                                            .foregroundStyle(Color.accentColor)
                                     } else {
-                                        Image(systemName: "photo")
-                                            .font(.title3)
+                                        Text("가격 정보 없음")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+
+                                    if let stock = product.stock {
+                                        Text("재고 \(stock)")
+                                            .font(.caption)
+                                            .foregroundStyle(stock <= 10 ? Color.red : Color.secondary)
+                                    } else {
+                                        Text("재고 정보 없음")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+
+                                    if let dateText = formattedDateText(product.createdAt) {
+                                        Text("등록일 \(dateText)")
+                                            .font(.caption2)
                                             .foregroundStyle(.secondary)
                                     }
                                 }
-                                .frame(height: 110)
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-
-                                Text(product.name)
-                                    .font(.subheadline.weight(.semibold))
-                                    .lineLimit(2)
-
-                                if let price = product.price {
-                                    Text(formattedCurrency(price))
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(Color.accentColor)
-                                } else {
-                                    Text("가격 정보 없음")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-
-                                if let stock = product.stock {
-                                    Text("재고 \(stock)")
-                                        .font(.caption)
-                                        .foregroundStyle(stock <= 10 ? Color.red : Color.secondary)
-                                } else {
-                                    Text("재고 정보 없음")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-
-                                if let dateText = formattedDateText(product.createdAt) {
-                                    Text("등록일 \(dateText)")
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                }
+                                .frame(width: 180, alignment: .leading)
+                                .padding(12)
+                                .background(Color(.systemBackground))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
                             }
-                            .frame(width: 180, alignment: .leading)
-                            .padding(12)
-                            .background(Color(.systemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .buttonStyle(.plain)
                         }
                     }
                 }

@@ -14,13 +14,14 @@ final class LoginViewModel: ObservableObject {
     @Published var password = ""
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published private(set) var loggedInRole: String?
 
     var isLoginEnabled: Bool {
         !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && !password.isEmpty
             && !isLoading
     }
-
+    
     private let authService: AuthServiceProtocol
     private let adminEmail = "admin@aa.com"
     private let adminPassword = "123123"
@@ -31,6 +32,7 @@ final class LoginViewModel: ObservableObject {
 
     func loginTapped() async -> Bool {
         guard isLoginEnabled else { return false }
+        
         return await performLogin(email: email, password: password)
     }
 
@@ -38,6 +40,7 @@ final class LoginViewModel: ObservableObject {
         guard !isLoading else { return false }
         email = adminEmail
         password = adminPassword
+        
         return await performLogin(email: adminEmail, password: adminPassword)
     }
 
@@ -47,7 +50,9 @@ final class LoginViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            try await authService.login(email: email, password: password)
+            let response = try await authService.login(email: email, password: password)
+            loggedInRole = response.role
+            
             return true
         } catch {
             if let localizedError = error as? LocalizedError,
@@ -56,6 +61,7 @@ final class LoginViewModel: ObservableObject {
             } else {
                 errorMessage = "로그인 중 오류가 발생했습니다."
             }
+            
             return false
         }
     }

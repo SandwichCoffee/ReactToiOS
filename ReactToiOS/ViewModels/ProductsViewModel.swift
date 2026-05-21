@@ -15,9 +15,20 @@ final class ProductsViewModel: ObservableObject {
     @Published var errorMessage: String?
     
     private let apiClient: APIClient
+    private var cancellables = Set<AnyCancellable>()
     
     init(apiClient: APIClient? = nil) {
         self.apiClient = apiClient ?? .shared
+        
+        NotificationCenter.default.publisher(for: .didUpdateProduct)
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    guard let self else { return }
+                    guard !self.isLoading else { return } // 중복 호출 방지
+                    self.refresh()
+                }
+            }
+            .store(in: &cancellables)
     }
     
     func refresh() {

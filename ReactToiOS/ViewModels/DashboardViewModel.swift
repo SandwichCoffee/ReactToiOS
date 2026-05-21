@@ -24,9 +24,21 @@ final class DashboardViewModel: ObservableObject {
 
     private let apiClient: APIClient
     private var hasLoaded = false
+    private var cancellables = Set<AnyCancellable>()
 
     init(apiClient: APIClient? = nil) {
         self.apiClient = apiClient ?? .shared
+        
+        NotificationCenter.default.publisher(for: .didUpdateProduct)
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    guard let self else { return }
+                    guard self.hasLoaded else { return }
+                    guard !self.isLoading else { return }
+                    await self.loadDashboard()
+                }
+            }
+            .store(in: &cancellables)
     }
 
     func loadIfNeeded() {
@@ -52,6 +64,7 @@ final class DashboardViewModel: ObservableObject {
     }
 
     private func loadDashboard() async {
+        guard !isLoading else { return }
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
