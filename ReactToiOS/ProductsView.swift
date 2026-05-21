@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ProductsView: View {
     @StateObject private var viewModel = ProductsViewModel()
+    @EnvironmentObject private var sessionStore: AppSessionStore
+    @State private var showCreateSheet = false
     private let columns = [
         GridItem(.flexible()),
         GridItem(.flexible())
@@ -39,6 +41,22 @@ struct ProductsView: View {
             }
         }
         .navigationTitle("Products")
+        .toolbar {
+            if sessionStore.isAdmin {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showCreateSheet = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showCreateSheet) {
+            NavigationStack {
+                ProductCreateView()
+            }
+        }
         .task { viewModel.refresh() }
     }
 }

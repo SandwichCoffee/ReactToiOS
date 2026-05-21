@@ -12,6 +12,13 @@ extension Notification.Name {
     static let didUpdateProduct = Notification.Name("didUpdateProduct")
 }
 
+struct MultipartFile {
+    let fieldName: String
+    let fileName: String
+    let mimeType: String
+    let data: Data
+}
+
 enum NetworkError: LocalizedError {
     case invalidURL
     case invalidResponse
@@ -217,5 +224,63 @@ final class APIClient {
         
         let (data, response) = try await session.data(for: request)
         _ = try handleResponse(data: data, response: response, path: path)
+    }
+    
+    func postMultipartNoResponse(
+        path: String,
+        form: [String: String],
+        file: MultipartFile?,
+        bearerToken: String? = nil
+    ) async throws {
+        guard let url = URL(string: baseURLString + path) else { throw NetworkError.invalidURL }
+        
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        if let bearerToken {
+            request.setValue("Bearer \(bearerToken)", forHTTPHeaderField: "Authorization")
+        } else if !isAuthEndpoint(path), let savedToken = tokenStore.readToken() {
+            request.setValue("Bearer \(savedToken)", forHTTPHeaderField: "Authorization")
+        }
+        
+        request.httpBody = buildMultipartBody(form: form, file: file, boundary: boundary)
+        
+        let (data, response) = try await session.data(for: request)
+        _ = try handleResponse(data: data, response: response, path: path)
+    }
+    
+    private func buildMultipartBody(
+        form: [String: String],
+        file: MultipartFile?,
+        boundary: String
+    ) -> Data {
+        var body = Data()
+        
+        for (key, value) in form {
+            body.appendUTF8("--\(boundary)\r\n")
+            body.appendUTF8("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n")
+            body.appendUTF8("\(value)\r\n")
+        }
+        
+        if let file {
+            body.appendUTF8("--\(boundary)\r\n")
+            body.appendUTF8("Content-Disposition: form-data; name=\"\(file.fieldName)\"; filename=\"\(file.fileName)\"\r\n")
+            body.appendUTF8("Content-Type: \(file.mimeType)\r\n\r\n")
+            body.append(file.data)
+            body.appendUTF8("\r\n")
+        }
+        
+        body.appendUTF8("--\(boundary)--\r\n")
+        return body
+    }
+}
+
+private extension Data {
+    mutating func appendUTF8(_ string: String) {
+        if let data = string.data(using: .utf8) {
+            append(data)
+        }
     }
 }

@@ -1,5 +1,5 @@
 //
-//  ProductEditView.swift
+//  ProductCreateView.swift
 //  ReactToiOS
 //
 //  Created by 샌드위치커피 on 5/21/26.
@@ -9,17 +9,11 @@ import SwiftUI
 import PhotosUI
 import UIKit
 
-struct ProductEditView: View {
+struct ProductCreateView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var viewModel: ProductEditViewModel
+    @StateObject private var viewModel = ProductCreateViewModel()
     @State private var selectedPhotoItem: PhotosPickerItem?
-    let onSaved: (() -> Void)?
-    
-    init(seed: ProductItem, onSaved: (() -> Void)? = nil) {
-        _viewModel = StateObject(wrappedValue: ProductEditViewModel(seed: seed))
-        self.onSaved = onSaved
-    }
-    
+
     var body: some View {
         Form {
             Section("이미지") {
@@ -41,29 +35,29 @@ struct ProductEditView: View {
                     }
                 }
             }
-            
+
             Section("기본 정보") {
                 TextField("상품명", text: $viewModel.name)
-                Picker("카테고리", selection: $viewModel.category) {
+                Picker("카테고라", selection: $viewModel.category) {
                     ForEach(ProductCategory.allCases) { category in
                         Text(category.title).tag(category.rawValue)
                     }
                 }
                 .pickerStyle(.menu)
             }
-            
+
             Section("가격/재고") {
                 TextField("가격", text: $viewModel.priceText)
                     .keyboardType(.numberPad)
                 TextField("재고", text: $viewModel.stockText)
                     .keyboardType(.numberPad)
             }
-            
+
             Section("설명") {
                 TextField("상품 설명", text: $viewModel.desc, axis: .vertical)
                     .lineLimit(4...8)
             }
-            
+
             if let message = viewModel.errorMessage {
                 Section {
                     Text(message)
@@ -72,7 +66,7 @@ struct ProductEditView: View {
                 }
             }
         }
-        .navigationTitle("상품 수정")
+        .navigationTitle("상품 추가")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
@@ -100,10 +94,7 @@ struct ProductEditView: View {
             }
         }
         .onChange(of: viewModel.didSave) { _, saved in
-            if saved {
-                onSaved?()
-                dismiss()
-            }
+            if saved { dismiss() }
         }
     }
 }
